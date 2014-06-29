@@ -45,9 +45,13 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     % detrend window
     this_block = detrend(this_block')';
 
+	% whitening, test
+	this_block = whiten(this_block);
+
     % find independent components by JADE
     B = jade(this_block);
     Y = B*this_block;
+	%Y=this_block;
 
     % find independent components by RADICAL
     % [Y, B] = RADICAL(this_block);
@@ -95,6 +99,6 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     end
 
     % signal visualization
-    % show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
+    show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
   end
 end
