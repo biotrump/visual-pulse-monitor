@@ -65,9 +65,10 @@
 #(1:10) => 1     2     3     4     5     6     7     8     9    10
 #(1:10)' transpose row to column
 
-function y = detrend (x, p = 1)
+#x is a 1xn matrix (row vector)
+function dy = detrend (y, p = 1)
   ## Check input
-  if (nargin > 0 && isreal (x) && ndims (x) <= 2)
+  if (nargin > 0 && isreal (y) && ndims (y) <= 2)
     ## Check p
     if (ischar (p) && strcmpi (p, "constant"))
       p = 0;
@@ -80,15 +81,19 @@ function y = detrend (x, p = 1)
     error ("detrend: first input argument must be a real vector or matrix");
   endif
 
-  [m, n] = size (x);
+  [m, n] = size (y); #y is 1xn, so m=1
   if (m == 1)
-    x = x';	%row vector to column
+    y = y';	#row vector to column vector
   endif
 
-  r = rows (x); % number of rows of the matrix
-  b = ((1 : r)' * ones (1, p + 1)) .^ (ones (r, 1) * (0 : p));
-%b =
-%     1     1
+  r = rows (y); # number of rows of the matrix
+  x = ((1 : r)' * ones (1, p + 1)) .^ (ones (r, 1) * (0 : p));
+#x is called design matrix. each element (1,Xi)
+#if (x,y) pair is from a 1-d discrete signal with a fixed sample period,
+#so x is the sample time number 1,2,3,4,5,6,..... with respect to y1,y2,y3..
+#so (x,y) pair is (1,y1), (2,y2),(3,y3)...(n,yn)
+#x =
+#     1     1
 %     1     2
 %     1     3
 %     1     4
@@ -97,11 +102,14 @@ function y = detrend (x, p = 1)
 %     1     7
 %     1     8
 %	....
-%	  1		r
-  y = x - b * (b \ x); % ==> (b \ x) = INV(b)*x
+%	  1
+# the Residuals are e = y - x * b, this is a detrend data in epsilon.
+#where b = inv(x*x') *x'*y
+
+  dy = y - x * (x \ y); # ==> (x \ y) = INV(x)*y
 
   if (m == 1)
-    y = y';
+    dy = dy';
   endif
 
 endfunction
