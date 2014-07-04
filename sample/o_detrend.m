@@ -105,7 +105,7 @@ function dy = detrend (y, p = 1)
 %	  1
 # the Residuals are e = y - x * b, this is a detrend data in epsilon.
 #where b = inv(x*x') *x'*y
-
+#dy= episolon e
   dy = y - x * (x \ y); # ==> (x \ y) = INV(x)*y
 
   if (m == 1)
