@@ -45,13 +45,12 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     % detrend window
     this_block = detrend(this_block')';
 
-	% whitening, test
+	%%% whitening, test code
 	this_block = whiten(this_block);
 
     % find independent components by JADE
     B = jade(this_block);
     Y = B*this_block;
-	%Y=this_block;
 
     % find independent components by RADICAL
     % [Y, B] = RADICAL(this_block);
