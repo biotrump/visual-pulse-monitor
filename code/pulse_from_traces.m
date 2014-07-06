@@ -3,10 +3,12 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
   % by signal normalization, independent components analysis,
   % fourier transform, and picking the maximum power frequency
   % within the operation healthy human pulse range [.75, 4] Hz or 45-240 bpm
+  %%% win_size should be 2's power, 2,4,8,...
+  %%%size(traces)=> [m n] = [3, inf], 3 rows, each row vector is R,G,B channel
 
   % operational range for human pulse (45-240 bpm)
   PULSE_MIN = .75;
-  PULSE_MAX = 4;
+  PULSE_MAX = 3.5;
 
   % threshold on pulse change per-measurement (12 bpm)
   PULSE_DELTA = .2;
@@ -29,13 +31,14 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
 
   % split channel traces into blocks by a moving window,
   % with the blocks normalized for zero mean and unit variance
+  %%%size(traces)=> [m n] = [3, inf], 3 rows, each row vector is R,G,B channel
   trace_blocks = extract_normalized_windows(traces, win_size*Fs, overlap*Fs);
-  num_channels = size(traces, 1);
-  num_blocks = size(trace_blocks, 3);
+  num_channels = size(traces, 1);   %The 1st dim of traces is 3 rows, num_channels==3
+  num_blocks = size(trace_blocks, 3);% get the 3rd dim of trace_blocks
 
   % measure pulse for each time window in each channel
-  pulse = zeros([1 num_blocks]);
-  spectra = zeros([2 NUM_FREQS num_channels num_blocks]);
+  pulse = zeros([1 num_blocks]);% 1 x num_blocks matrix of zeros
+  spectra = zeros([2 NUM_FREQS num_channels num_blocks]);% 2 x NUM_FREQS x num_channels x num_blocks
   for idx=1:num_blocks
     this_block = trace_blocks(:,:,idx);
     % progress output
@@ -98,6 +101,6 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     end
 
     % signal visualization
-    show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
+    %show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
   end
 end
