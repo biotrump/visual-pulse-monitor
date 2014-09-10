@@ -9,6 +9,7 @@ function [pows, freq] = analyse_power_spectrum(X, Fs)
   % If you need to shift frequency components to be visually clearer (not necessary always), use fftshift after fft. 
   % FFT => F(X) = Sum(a*cos(nx)+j*b*sin(nx)), each term is exp(2 * pi *j *w * t) = cos(2*pi*w*t) + j sin(2*pi*w*t)
   % fft(X) will get 2 symmetric parts : positive side and negative side, only one side is enough!
+  % amp is a sorted list by freq.
   amp = fftshift(fft(X));
 
   % make frequency range over the N sampled data
@@ -19,8 +20,8 @@ function [pows, freq] = analyse_power_spectrum(X, Fs)
 
   % select the positive domain FFT and range
   one_idx = fN/2 + 2;
-  amp = amp(one_idx:end); % here to retreive the positive side
-  freq = freq(one_idx:end); % start from one to positive idx
+  amp = amp(one_idx:end); % here to retreive the positive side, it's sorted along the index.
+  freq = freq(one_idx:end); % start from one to positive idx, it's sorted along the index.
 
   % return power spectrum
   % ".^2" is the element-wise power of 2, each element is powered of 2
