@@ -1,6 +1,6 @@
 function [windows] = extract_normalized_windows(traces, window_len, overlap)
 %%%size(traces)=> [m n] = [3, inf], 3 rows, each row vector is R,G,B channel
-%%window_len :total frames in a window
+%%window_len :total frames in a window, to be analyze in a time
 %%%overlap : the overlapped frames in the window
   % Extract moving window from traces according to window length
   % and the desired overlap (both in number of frames),
@@ -16,10 +16,20 @@ function [windows] = extract_normalized_windows(traces, window_len, overlap)
   %%%is the observed data.
   %%%(total frames in a channel - overlapped frames in a window) => the total left frames to scan in a channel.
   %%% num_windows : the total windows to process in a channel, but skipping the first overlapped frames.
+  
+  fprintf('length(traces)=%d frames  ', length(traces)); % total sample data
+  fprintf('overlap=%d frames  ', overlap);
+  fprintf('win_spacing=%d frames\n', win_spacing);
+  
   num_windows = floor((length(traces) - overlap) / win_spacing); %length : return the max elements among dimensions
+  
+  fprintf(' num_windows=%d\n',  num_windows);
+  
   %%% num_windows*num_channels : RGB channel(3 channel) * total scanning windows ==> total scanning windows in R and G andB channels.
   %%window_len :total frames in a window
   trace_windows = zeros([window_len num_windows*num_channels]);
+  fprintf('[window_len=%d num_windows*num_channels=%d * %d ]\n', [window_len num_windows*num_channels]);
+  
   %%% procecssing the total windows in a channel
   for win=1:num_windows
     win_start = (win-1)*win_spacing + 1;    %unit is frame
@@ -34,6 +44,9 @@ function [windows] = extract_normalized_windows(traces, window_len, overlap)
   trace_windows = trace_windows ./ repmat(std(trace_windows), [window_len 1]);
 
   % create a channels * frames * windows matrix
+  fprintf('reshape trace_windows[%d %d] [window_len=%d num_channels=%d num_windows=%d] \n', [size(trace_windows) window_len num_channels num_windows] );
   windows = reshape(trace_windows, [window_len num_channels num_windows]);
+  fprintf('to windows[%d %d %d]\n', size(windows));
   windows = permute(windows, [2 1 3]);
+  fprintf('[2 1 3] permute : windows[%d %d %d]\n\n', size(windows));
 end

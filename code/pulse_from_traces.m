@@ -3,7 +3,8 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
   % by signal normalization, independent components analysis,
   % fourier transform, and picking the maximum power frequency
   % within the operation healthy human pulse range [.75, 4] Hz or 45-240 bpm
-  %%% win_size should be 2's power, 2,4,8,...
+  %%% win_size should be 2's power, 2,4,8,... The length in seconds of the sample data to be processed in one time.
+  %%% overlap : (win_size - overlap) = the next processed data will "overlap" with current processed data.
   %%%size(traces)=> [m n] = [3, inf], 3 rows, each row vector is R,G,B channel
 
   % operational range for human pulse (45-240 bpm)
@@ -33,7 +34,17 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
   % split channel traces into blocks by a moving window,
   % with the blocks normalized for zero mean and unit variance
   %%%size(traces)=> [m n] = [3, inf], 3 rows, each row vector is R,G,B channel
+  %%% the total processing times : (total_sample_frames - win_size_in_sec*fps)/((win_size_in_sec-overlap_in_sec)*fps)
+  %%% for example : traces[3 515]=> 3 rows(R,G,B) channels with 515 data sample (each RGB sample data is averaged from a frame)
+  %%% When the win_size is at the tail of the sample data, this is the last process.
+  %%% so total processed frames are  (total_sample_frames - win_size_in_sec*fps) 
+  %%% If the win_size is 8 seconds to be processed at a time, (515 - 8*15) /((8-7)*15) = 26.3 times = 27 times
+  %%% we need to move the win_size sample data by a step (win_size - overlap) for 26.3=27 times to complete the process.
+  %%% 120 = win_size_in_sec*fps = 8s * 15 = 120, frames to be processed in a time.
+  %%% trace_blocks[3 120 27] : the 3rd dim is the total steps to process, 27.
+  
   trace_blocks = extract_normalized_windows(traces, win_size*Fs, overlap*Fs);
+  fprintf('traces[%d %d] trace_blocks[%d %d %d]\n', [size(traces) size(trace_blocks)]);
   num_channels = size(traces, 1);   %The 1st dim of traces is 3 rows, num_channels==3
   num_blocks = size(trace_blocks, 3);% get the 3rd dim of trace_blocks
 
@@ -58,6 +69,7 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
 	% If m is omitted,  B=jadeR(X)  is a square n*n matrix (as many sources as sensors)
     B = jade(this_block);
     Y = B*this_block;	%Y[3 :], R,G,B channels
+    %%Y=this_block;
 
     % find independent components by RADICAL
     % http://people.cs.umass.edu/~elm/ICA/
@@ -65,7 +77,8 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     % http://www.mlpack.org/files/mlpack-1.0.10.tar.gz
     % http://www.mlpack.org/doxygen.php?doc=classmlpack_1_1radical_1_1Radical.html#_details
     % RADICAL on average outperformed Fast ICA, JADE, Kernel ICA, and the extended Infomax algorithms.
-    % [Y, B] = RADICAL(this_block);
+    %%addpath ("./radical")
+    %%[Y, B] = RADICAL(this_block);
 
     % record power spectra for each channel trace & independent component
     for chn=1:num_channels
@@ -110,6 +123,6 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     end
 
     % signal visualization
-    %%show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
+    %show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
   end
 end
