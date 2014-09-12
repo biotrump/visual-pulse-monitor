@@ -7,6 +7,7 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
   %%%size(traces)=> [m n] = [3, inf], 3 rows, each row vector is R,G,B channel
 
   % operational range for human pulse (45-240 bpm)
+  % TODO TODO : if the respiratory rate is needed, the freq should be considered.
   PULSE_MIN = .75;
   PULSE_MAX = 3.5;
 
@@ -45,28 +46,36 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     this_sec = (idx-1)*(win_size - overlap);
     fprintf('Measuring pulse over seconds %d - %d\n', [this_sec+1 this_sec+win_size]);
 
-    % detrend window
+    % detrend window, is this necessary if this_block has been zero-mean???
     this_block = detrend(this_block')';
 
 	%%% whitening, test code
 	this_block = whiten(this_block);
 
     % find independent components by JADE
+	% B = jadeR(X, m) is an m*n matrix such that Y=B*X are separated sources
+	% extracted from the n*T data matrix X.
+	% If m is omitted,  B=jadeR(X)  is a square n*n matrix (as many sources as sensors)
     B = jade(this_block);
-    Y = B*this_block;
+    Y = B*this_block;	%Y[3 :], R,G,B channels
 
     % find independent components by RADICAL
+    % http://people.cs.umass.edu/~elm/ICA/
+    % http://www.measurement.sk/2005/S2/krishnaveni.pdf
+    % http://www.mlpack.org/files/mlpack-1.0.10.tar.gz
+    % http://www.mlpack.org/doxygen.php?doc=classmlpack_1_1radical_1_1Radical.html#_details
+    % RADICAL on average outperformed Fast ICA, JADE, Kernel ICA, and the extended Infomax algorithms.
     % [Y, B] = RADICAL(this_block);
 
     % record power spectra for each channel trace & independent component
     for chn=1:num_channels
       % power spectra
-      [ic_pows, ic_freq] = analyse_power_spectrum(Y(chn, :), Fs);
-      [trace_pows, trace_freq] = analyse_power_spectrum(this_block(chn, :), Fs);
-      [ic_ppows, ic_pfreq] = bandlimit(ic_pows, ic_freq, PULSE_MIN, PULSE_MAX);
+      [ic_pows, ic_freq] = analyse_power_spectrum(Y(chn, :), Fs); % Y(chn, :) the chn row is used.
+      [trace_pows, trace_freq] = analyse_power_spectrum(this_block(chn, :), Fs); %this_block is detrend and whiten, but no ICA yet
+      [ic_ppows, ic_pfreq] = bandlimit(ic_pows, ic_freq, PULSE_MIN, PULSE_MAX); %filter
       [trace_ppows, trace_pfreq] = bandlimit(trace_pows, trace_freq, PULSE_MIN, PULSE_MAX);
-      ic_spect(chn, :, :) = [ ic_pows ; ic_freq ];
-      trace_spect(chn, :, :) = [ trace_pows ; trace_freq ];
+      ic_spect(chn, :, :) = [ ic_pows ; ic_freq ];		%for plot signal show only
+      trace_spect(chn, :, :) = [ trace_pows ; trace_freq ];	%for plot signal show only
 
       % rank frequencies by power
       [ic_max_pow ic_max_idx] = sort(ic_ppows, 'descend');
