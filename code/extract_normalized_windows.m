@@ -28,7 +28,7 @@ function [windows] = extract_normalized_windows(traces, window_len, overlap)
   %%% num_windows*num_channels : RGB channel(3 channel) * total scanning windows ==> total scanning windows in R and G andB channels.
   %%window_len :total frames in a window
   trace_windows = zeros([window_len num_windows*num_channels]);
-  fprintf('[window_len=%d num_windows*num_channels=%d * %d ]\n', [window_len num_windows*num_channels]);
+  fprintf('[window_len=%d num_windows*num_channels=%d * %d = %d ]\n', [window_len num_windows num_channels num_windows*num_channels]);
   
   %%% procecssing the total windows in a channel
   for win=1:num_windows
