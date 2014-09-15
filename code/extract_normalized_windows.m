@@ -40,6 +40,10 @@ function [windows] = extract_normalized_windows(traces, window_len, overlap)
   end
 
   % normalize each trace window to have zero mean and unit variance
+  % repmat(A,[2 3]) => A can be any mxn matrix or single data or 1-d array
+  % replicate A to 2x3 Matrix as
+  % A A A
+  % A A A
   trace_windows = trace_windows - repmat(mean(trace_windows), [window_len 1]);
   trace_windows = trace_windows ./ repmat(std(trace_windows), [window_len 1]);
 
