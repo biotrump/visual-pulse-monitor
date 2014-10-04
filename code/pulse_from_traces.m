@@ -123,6 +123,6 @@ function [pulse ic_spectra trace_spectra] = pulse_from_traces(traces, Fs, win_si
     end
 
     % signal visualization
-    %show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
+    show_signals(this_block, Y, trace_spect, ic_spect, [PULSE_MIN PULSE_MAX]);
   end
 end
