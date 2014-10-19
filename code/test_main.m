@@ -7,8 +7,8 @@
 
 % octave in ubuntu
 %fid=fopen('../data/cam/raw-trace-25fps.txt');%640x480x15fps
-%fid=fopen('../data/cam/raw-25fps.txt');%640x480x15fps
-fid=fopen('../data/cam/raw.txt');%640x480x15fps
+fid=fopen('../data/cam/raw-25fps.txt');%640x480x15fps
+%fid=fopen('../data/cam/raw.txt');%640x480x15fps
 
 %rdata=fscanf(fid,'%e %e %e %e',[4 inf]);  %[m n] = [4 inf] 4 channels (R,G,B,0.0)
 rdata=fscanf(fid,'%e %e %e',[3 inf]);  %[m n] = [3 inf] 3 channels (R,G,B), 3 row vectors and the column can be infinite
